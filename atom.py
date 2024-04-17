@@ -1,8 +1,10 @@
 
 class Atom:
     
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, charge: int = 0, concentration: float = 0.) -> None:
         self.name = name
+        self.charge = charge
+        self.concentration = concentration
 
     def __str__(self) -> str:
         return self.name

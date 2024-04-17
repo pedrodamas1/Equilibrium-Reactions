@@ -1,22 +1,23 @@
 from __future__ import annotations
-from typing import Dict, Set
-import numpy as np
+from typing import Tuple, Set, Union
 from collections import Counter
 from atom import Atom
 
 
 class Molecule:
 
-	def __init__(self, particles: Dict[Molecule, int], charge: int) -> None:
+	def __init__(self, particles: Tuple[Tuple[Union[Atom, Molecule], int]], 
+			  charge: int = 0, concentration: float = 0.) -> None:
 		self.particles = particles
 		self.charge = charge
+		self.concentration = concentration
 
 	def __str__(self) -> str:
 		# Create a placeholder for the string representation
 		text = ''
 
 		# Loop over the level 1 particles and moles in this molecule
-		for particle, moles in self.particles.items():
+		for particle, moles in self.particles:
 
 			# Defined the template depending on the particle type and the number of moles 
 			if isinstance(particle, Molecule) and moles != 1:
@@ -40,7 +41,7 @@ class Molecule:
 		counter = Counter()
 
 		# Loop over the particles and moles in this molecule
-		for particle, moles in self.particles.items():
+		for particle, moles in self.particles:
 
 			# If this particle is an atom, we just add its moles to the counter
 			if isinstance(particle, Atom):
@@ -59,7 +60,7 @@ class Molecule:
 		species = set()
 
 		# Loop over the particles in this molecule
-		for particle in self.particles:
+		for particle, _ in self.particles:
 
 			# If this particle is an atom, we just add it to the set
 			if isinstance(particle, Atom):
@@ -76,50 +77,35 @@ class Molecule:
 
 if __name__ == '__main__':
 	# Create a few elements
-	iron = Atom('Fe')
-	oxygen = Atom('O')
-	nitrogen = Atom('N')
-	hydrogen = Atom('H')
+	Fe = Atom('Fe')
+	O = Atom('O')
+	N = Atom('N')
+	H = Atom('H')
+	C = Atom('C')
+
 
 	# Create a water molecule
-	water = Molecule(particles = {hydrogen:2, oxygen:1}, charge = 0)
+	water = Molecule(particles = ((H,2), (O,1)))
 	print(water)
 	print(water.count_species())
 	print(water.get_species())
 
 	# Create a level one molecule
-	nitrate = Molecule(particles = {nitrogen:1, oxygen:3}, charge = -1)
+	nitrate = Molecule(particles = ((N,1), (O,3)), charge = -1)
 	print(nitrate)
 	print(nitrate.print_ion())
 	print(nitrate.count_species())
 	print(nitrate.get_species())
 
 	# Create a level two molecule (or composite molecule)
-	iron_nitrate = Molecule(particles = {iron:2, nitrate:3}, charge = +3)
+	iron_nitrate = Molecule(particles = ((Fe,2), (nitrate,3)), charge = +3)
 	print(iron_nitrate)
 	print(iron_nitrate.print_ion())
 	print(iron_nitrate.count_species())
 	print(iron_nitrate.get_species())
 
-
-
-
-
-# if __name__ == '__main__':
-#     # HCl <=> H+ + Cl-
-#     hydrochloric_acid = Molecule('HCl', 0)
-#     hydron = Molecule('H', +1)
-#     chloride = Molecule('Cl', -1)
-
-#     hydrochloric_dissociation = Reaction(
-#         reactants={
-#             hydrochloric_acid:{'moles':1, 'concentration':0.1},
-#         },
-#         products={
-#             hydron:{'moles':1, 'concentration':0.},
-#             chloride:{'moles':1, 'concentration':0.},
-#         },
-#         constant=1e8,
-#     )
-
-#     system = System([hydrochloric_dissociation])
+	# Acetic acid: HC2H3O2 - notice how we have separate H representations
+	acetic_acid = Molecule(particles=((H,1), (C,2), (H,3), (O,2)))
+	print(acetic_acid)
+	print(acetic_acid.get_species())
+	print(acetic_acid.count_species())
