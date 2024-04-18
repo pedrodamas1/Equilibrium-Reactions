@@ -161,6 +161,13 @@ class System:
 		Returns:
 			bool: True if the solver succeeds, False otherwise.
 		"""
+
+		# Check if equations and unknowns are balanced
+		N_unknowns = len(self.molecules)
+		N_equations = len(self.reactions) + len(self.conservation) + 1
+		is_balanced = N_unknowns == N_equations
+		if not is_balanced:
+			raise Exception(f'The number of unknows ({N_unknowns}) does not match the number of equations ({N_equations})')
 		
 		def func(log_c_arr: np.ndarray) -> np.ndarray:
 			"""
@@ -236,8 +243,26 @@ if __name__ == '__main__':
 	system.solve()
 
 	# Use this website to validate results: https://www.aqion.onl/
-	print(f'The equilibrium concentration of hydron is [H+]={hydron.concentration:.5f} and \
-	   the solution pH is {-np.log10(hydron.concentration):.3f}')
+	print(f'The equilibrium concentration of hydron is [H+]={hydron.concentration:.5f} and the pH is {-np.log10(hydron.concentration):.3f}')
 
+	# Phosphoric acid dissociation
+	phosporic_acid = Molecule('H3PO4')
+	dihydrogen_phosphate = Molecule('H2PO4-', charge=-1)
+	monohydrogen_phosphate = Molecule('HPO4.2-', charge=-2)
+	phosphate = Molecule('PO4.3-', charge=-3)
 
+	phosphoric_dissociation_1 = Reaction(species={phosporic_acid:-1, dihydrogen_phosphate:1, hydron:1}, equilibrium_constant=1.1e-2)
+	phosphoric_dissociation_2 = Reaction(species={dihydrogen_phosphate:-1, monohydrogen_phosphate:1, hydron:1}, equilibrium_constant=2.0e-7)
+	phosphoric_dissociation_3 = Reaction(species={monohydrogen_phosphate:-1, phosphate:1, hydron:1}, equilibrium_constant=3.6e-13)
+
+	system = System(
+		reactions = {
+			phosphoric_dissociation_1, 
+			phosphoric_dissociation_2, 
+			phosphoric_dissociation_3, 
+			water_dissociation}, 
+		conservation = {'PO4':0.01}
+	)
+	system.solve()
+	print(f'The equilibrium concentration of hydron is [H+]={hydron.concentration:.5f} and the pH is {-np.log10(hydron.concentration):.3f}')
 
