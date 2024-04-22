@@ -1,69 +1,8 @@
-from typing import Dict, Set
+from typing import Set, Dict
+from reaction import Reaction
+from molecule import Molecule
 import numpy as np
-from scipy.optimize import root
-
-
-class Molecule:
-	"""
-	Represents a molecule with its name, charge, and concentration.
-	"""
-
-	def __init__(self, name: str, charge: int = 0, concentration: float = 0.0) -> None:
-		"""
-		Initialize the Molecule object.
-
-		Args:
-			name (str): The name of the molecule.
-			charge (int): The charge of the molecule (default is 0).
-			concentration (float): The concentration of the molecule (default is 0.0).
-		"""
-		self.name = name
-		self.charge = charge
-		self.concentration = concentration
-
-	def __str__(self) -> str:
-		"""
-		Return a string representation of the molecule.
-		"""
-		return self.name
-
-	def __repr__(self) -> str:
-		"""
-		Return a string representation that can be used to recreate the object.
-		"""
-		return self.name
-
-
-class Reaction:
-	"""
-	Represents a chemical reaction with participating species and equilibrium constant.
-	"""
-
-	def __init__(self, species: Dict[Molecule, int], equilibrium_constant: float) -> None:
-		"""
-		Initialize the Reaction object.
-
-		Args:
-			species (Dict[Molecule, int]): Dictionary containing species and their stoichiometric coefficients.
-			equilibrium_constant (float): The equilibrium constant of the reaction.
-		"""
-		self.species = species
-		self.equilibrium_constant = equilibrium_constant
-
-	def __str__(self) -> str:
-		"""
-		Return a string representation of the chemical reaction.
-		"""
-		reactants = [f"{'' if abs(moles) == 1 else abs(moles)}{molecule}" for molecule, moles in self.species.items() if moles < 0]
-		products = [f"{'' if abs(moles) == 1 else abs(moles)}{molecule}" for molecule, moles in self.species.items() if moles > 0]
-		return ' + '.join(reactants) + ' <=> ' + ' + '.join(products)
-
-	def __repr__(self) -> str:
-		"""
-		Return a string representation.
-		"""
-		return self.__str__()
-
+from scipy.optimize import root, fsolve
 
 class System:
 	"""
@@ -215,8 +154,8 @@ class System:
 		if initial_guess is None:
 			initial_guess = np.ones(len(self.molecules))
 
-		# Solve the system
-		sol = root(func, np.log10(initial_guess))
+		# Solve the system using the 'lm' algorithm (works better than 'hybr')
+		sol = root(func, np.log10(initial_guess), method='lm')
 
 		# Set the concetration value of each molecule
 		if sol['success']:
@@ -225,44 +164,4 @@ class System:
 
 		# Return the sucess of the solver
 		return sol['success']
-
-
-if __name__ == '__main__':
-	# Create some substances
-	acetic_acid = Molecule(name = 'HC2H3O2')
-	hydron = Molecule(name = 'H+', charge = +1)
-	acetate = Molecule(name = 'C2H3O2-', charge = -1)
-	hydroxide = Molecule(name = 'OH-', charge = -1)
-
-	# Create the reactions present
-	acetic_dissociation = Reaction(species = {acetic_acid: -1, hydron: 1, acetate: 1}, equilibrium_constant = 1.8e-5)
-	water_dissociation = Reaction(species = {hydroxide:1, hydron:1}, equilibrium_constant = 1.0e-14)
-
-	# Create and solve the reaction system
-	system = System(reactions = {acetic_dissociation, water_dissociation}, conservation = {'C2H3O2':0.5})
-	system.solve()
-
-	# Use this website to validate results: https://www.aqion.onl/
-	print(f'The equilibrium concentration of hydron is [H+]={hydron.concentration:.5f} and the pH is {-np.log10(hydron.concentration):.3f}')
-
-	# Phosphoric acid dissociation
-	phosporic_acid = Molecule('H3PO4')
-	dihydrogen_phosphate = Molecule('H2PO4-', charge=-1)
-	monohydrogen_phosphate = Molecule('HPO4.2-', charge=-2)
-	phosphate = Molecule('PO4.3-', charge=-3)
-
-	phosphoric_dissociation_1 = Reaction(species={phosporic_acid:-1, dihydrogen_phosphate:1, hydron:1}, equilibrium_constant=1.1e-2)
-	phosphoric_dissociation_2 = Reaction(species={dihydrogen_phosphate:-1, monohydrogen_phosphate:1, hydron:1}, equilibrium_constant=2.0e-7)
-	phosphoric_dissociation_3 = Reaction(species={monohydrogen_phosphate:-1, phosphate:1, hydron:1}, equilibrium_constant=3.6e-13)
-
-	system = System(
-		reactions = {
-			phosphoric_dissociation_1, 
-			phosphoric_dissociation_2, 
-			phosphoric_dissociation_3, 
-			water_dissociation}, 
-		conservation = {'PO4':0.01}
-	)
-	system.solve()
-	print(f'The equilibrium concentration of hydron is [H+]={hydron.concentration:.5f} and the pH is {-np.log10(hydron.concentration):.3f}')
 
