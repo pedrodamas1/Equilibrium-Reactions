@@ -1,7 +1,3 @@
-Sure! Here's a template for a README file you can use on GitHub for your project:
-
----
-
 # Simultaneous Equilibrium Chemical Reactions Solver
 
 ## Overview
@@ -29,12 +25,12 @@ The project includes several examples to demonstrate its capabilities:
 1. **Installation:** Clone the repository to your local machine.
 
 ```bash
-git clone https://github.com/your-username/simultaneous-equilibrium-solver.git
+git clone https://github.com/pedrodamas1/simultaneous-equilibrium-solver.git
 ```
 
 2. **Dependencies:** Ensure you have Python 3 installed on your system.
 
-3. **Usage:** Explore the examples provided in the `examples` directory to understand how to use the solver for your own equilibrium calculations.
+3. **Usage:** Explore the examples provided in the `examples` Jupyter Notebook to understand how to use the solver for your own equilibrium calculations.
 
 ## Contributing
 
@@ -42,12 +38,4 @@ Contributions are welcome! If you encounter any issues or have suggestions for i
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgements
-
-Special thanks to the contributors who have helped improve and refine this project.
-
----
-
-Feel free to customize this template to suit your project's specific needs!
+This project is licensed under the MIT License.
