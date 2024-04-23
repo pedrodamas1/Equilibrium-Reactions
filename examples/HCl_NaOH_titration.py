@@ -1,5 +1,7 @@
 
 '''
+SYSTEMATIC ACID-BASE CALCULATIONS
+
 To run use: python -m examples.HCl_NaOH_titration
 
 Reactions in place:
@@ -36,30 +38,21 @@ water_dissociation = Reaction(species = {hydroxide:1, hydron:1}, equilibrium_con
 # Create and solve the reaction system
 system = System(reactions = {hydrochloric_dissociation, sodium_hydroxide_dissociation, water_dissociation}, conservation = {'Cl':1.0, 'Na':0.9})
 
-# Solve the first point of the titration
-def random_solve(system: System, low: float, high: float, size: int, max_iter: int) -> bool:
-	for _ in range(max_iter):
-		guess = np.random.uniform(low=low, high=high, size=size)
-		sucess = system.solve(initial_guess=guess)
-		if sucess:
-			break
-	return sucess
-
-success = random_solve(system, 0.9, 1.1, len(system.molecules), 500)
+success = system.brute_solve(0.9, 1,1)
 cH = hydron.concentration
 pH = -np.log10(hydron.concentration)
 pH_arr = [pH]
 print(f'Success: {success} [H+]={cH:.10f} pH: is {pH:.5f}')
 
 # Now use the initial result to move along small steps
-guess = np.array([molecule.concentration for molecule in system.molecules])
+guess = system.concentrations
 ci_arr = np.linspace(0.9, 1.1, 100)
 for ci in ci_arr[1:]:
 	system.conservation['Na'] = ci
 	sucess = system.solve(initial_guess=guess)
-	guess = np.array([molecule.concentration for molecule in system.molecules])
+	guess = system.concentrations
 	cH = hydron.concentration
-	pH = -np.log10(hydron.concentration)
+	pH = -np.log10(cH)
 	pH_arr.append(pH)
 	print(f'Success: {success} [H+]={cH:.10f} pH: is {pH:.5f}')
 

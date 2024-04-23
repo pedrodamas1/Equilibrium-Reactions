@@ -28,6 +28,13 @@ class System:
 		return {molecule for reaction in self.reactions for molecule in reaction.species}
 
 	@property
+	def concentrations(self) -> np.ndarray:
+		"""
+		Get the array of molecule concentrations.
+		"""
+		return np.array([molecule.concentration for molecule in self.molecules])
+
+	@property
 	def molar_matrix(self) -> np.ndarray:
 		"""
 		Calculate the molar matrix of the system.
@@ -110,7 +117,9 @@ class System:
 		
 		def func(log_c_arr: np.ndarray) -> np.ndarray:
 			"""
-			Calculate the function for the solver.
+			Calculate the function for the solver. 
+			Here we use the equilibrium constant method.
+			Future work should explore the Gibbs Free Energy Minimization method
 
 			Args:
 				log_c_arr (np.ndarray): Array of the logarithm of species concentrations.
@@ -165,3 +174,31 @@ class System:
 		# Return the sucess of the solver
 		return sol['success']
 
+	def brute_solve(self, low: float, high: float, max_iter: int = 1000) -> bool:
+		"""
+		Brute force (random) solver of the system of chemical reactions.
+
+		Args:
+			low (float): Minimum value for the random Gaussian array.
+			high (float): Maximum value for the random Gaussian array.
+			max_iter (float): Maximum attempts on brute force solving. Defaults to 1000.
+
+		Returns:
+			bool: True if the solver succeeds, False otherwise.
+		"""
+
+		# Loops over all iterations
+		for _ in range(max_iter):
+
+			# Generate a Gaussian distributed array to use as guess
+			guess = np.random.uniform(low=low, high=high, size=len(self.molecules))
+
+			# Try to solve the system
+			sucess = self.solve(initial_guess=guess)
+
+			# If successful break, otherwise continue
+			if sucess:
+				break
+		
+		# Return the success boolean
+		return sucess
